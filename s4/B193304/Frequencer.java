@@ -96,7 +96,7 @@ public class Frequencer implements FrequencerInterface{
         //                                            
         // ここに、int suffixArrayをソートするコードを書け。
         // 　順番はsuffixCompareで定義されるものとする。 
-	for(int n=0;n<mySpace.length-1;n++){
+	/*for(int n=0;n<mySpace.length-1;n++){
 		for(int m=mySpace.length-1;m>n;m--){
 			int temp;
 			if(suffixCompare(suffixArray[m-1],suffixArray[m])==1){
@@ -105,8 +105,34 @@ public class Frequencer implements FrequencerInterface{
 				suffixArray[m]=temp;
 			}
 		}
-	}
+	}*/
+	quickSort(suffixArray,0,mySpace.length-1);
     }
+
+    private void quickSort(int[] array, int left, int right){
+        if(left <= right){
+            int p = right;
+            int l = left;
+            int r = right;
+            while(l <= r){
+                while (suffixCompare(suffixArray[l],suffixArray[p])==-1){
+                    l ++;
+                }
+                while (suffixCompare(suffixArray[r],suffixArray[p])==1){
+                    r --;
+                }
+                if (l <= r){
+                    int tmp = array[l];
+                    array[l] = array[r];
+                    array[r] = tmp;
+                    l++ ;
+                    r-- ;
+                }
+            }
+            quickSort(array, left, r);
+            quickSort(array, l, right);
+        }
+   }
 
     // Suffix Arrayを用いて、文字列の頻度を求めるコード
     // ここから、指定する範囲のコードは変更してはならない。
@@ -244,9 +270,9 @@ public class Frequencer implements FrequencerInterface{
         //                                                                   
         //　ここにコードを記述せよ                                           
         //
-	for(int i = 0; i < suffixArray.length; i++){
-		if(targetCompare(suffixArray[i],start,end) == 1){
-			return i;
+	for(int i = suffixArray.length-1; i >=0 ; i--){
+		if(targetCompare(suffixArray[i],start,end) == 0){
+			return i+1;
 		}
 	}                                                                   
         return -1; // この行は変更しなければならない、       
@@ -284,12 +310,12 @@ public class Frequencer implements FrequencerInterface{
                A:o Hi Ho                     
             */
 
-            frequencerObject.setTarget("Hi Ho Hi Ho".getBytes());
+            frequencerObject.setTarget("H".getBytes());
             //                                         
             // ****  Please write code to check subByteStartIndex, and subByteEndIndex
             //
-	    System.out.println("目的が出現する場所:"+frequencerObject.subByteStartIndex(0,5));
-	    System.out.println("目的が出現しなくなる場所:"+frequencerObject.subByteEndIndex(0,5));
+	    //System.out.println("目的が出現する場所:"+frequencerObject.subByteStartIndex(0,5));
+	    //System.out.println("目的が出現しなくなる場所:"+frequencerObject.subByteEndIndex(0,5));
 
 
             int result = frequencerObject.frequency();
