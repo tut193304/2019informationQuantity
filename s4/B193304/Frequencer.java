@@ -65,22 +65,26 @@ public class Frequencer implements FrequencerInterface{
 
         // ここにコードを記述せよ 
         //             
-	int x=mySpace.length-i;
-	int y=mySpace.length-j;
-	for(;i<mySpace.length && j<mySpace.length;i++,j++){
-		if(mySpace[i]<mySpace[j]){
-			return -1;
-		}else if(mySpace[i]>mySpace[j]){
-			return 1;
+	int index_i = suffixArray[i];
+		int index_j = suffixArray[j];
+		while(mySpace[index_i] == mySpace[index_j]){
+			index_i++;
+			index_j++;
+			if(mySpace.length <= index_i || mySpace.length <= index_j){
+				if(suffixArray[i] < suffixArray[j]){
+					return 1;
+				}else if(suffixArray[i] > suffixArray[j]){
+					return -1;
+				}else{
+					return 0;
+				}
+			}
 		}
-	}
-	if(x<y){
-		return -1;
-	}else if(x>y){
-		return 1;
-	}else{
-		return 0;  
-	}                 
+		if(mySpace[index_i] > mySpace[index_j]){
+			return 1;
+		}else{
+			return -1;
+		}    
         //return 0; // この行は変更しなければいけない。 
     }
 
@@ -89,9 +93,11 @@ public class Frequencer implements FrequencerInterface{
         mySpace = space; if(mySpace.length>0) spaceReady = true;
         // First, create unsorted suffix array.
         suffixArray = new int[space.length];
+	int tempArray[]=new int[space.length];
         // put all suffixes in suffixArray.
         for(int i = 0; i< space.length; i++) {
-            suffixArray[i] = i; // Please note that each suffix is expressed by one integer.      
+            suffixArray[i] = i; // Please note that each suffix is expressed by one integer.
+	    tempArray[i]=i;
         }
         //                                            
         // ここに、int suffixArrayをソートするコードを書け。
@@ -106,10 +112,10 @@ public class Frequencer implements FrequencerInterface{
 			}
 		}
 	}*/
-	quickSort(suffixArray,0,mySpace.length-1);
+	suffixArray=mergeSort(tempArray);
     }
 
-    private void quickSort(int[] array, int left, int right){
+/*    private void quickSort(int[] array, int left, int right){
         if(left <= right){
             int p = right;
             int l = left;
@@ -132,7 +138,55 @@ public class Frequencer implements FrequencerInterface{
             quickSort(array, left, r);
             quickSort(array, l, right);
         }
-   }
+   }*/
+
+	//再帰を使わないマージソート
+	private int[] mergeSort(int array[]){
+		 if(array.length < 2){
+		 	return array;
+		 }
+		 int left = 0;
+		 int right = 1;
+		 int end = 2;
+		 int step = 1;
+		 int array_length = array.length;
+		 int[] tmp = new int[array_length];
+		 while(step < array_length){
+		 	while(left <= array_length-1){
+		 		if(end > array_length){
+		 			end = array_length;
+				}
+		 		if(right > array_length-1){
+		 			right = end;
+				}
+				for(int i = left, j = 0, k = 0; i < end; i++){
+					if(left+j == right){
+						tmp[i] = array[right+k];
+						k++;
+					}else if(right+k == end){
+						tmp[i] = array[left+j];
+						j++;
+					}else if(suffixCompare(array[left+j], array[right+k]) == 1){
+						tmp[i] = array[right+k];
+						k++;
+					}else{
+						tmp[i] = array[left+j];
+						j++;
+					}
+				}
+		 		left = end;
+		 		right = end+step;
+		 		end = end+step+step;
+			}
+			step = step*2;
+			left = 0;
+			right = step;
+			end = step+step;
+			System.arraycopy(tmp, 0, array, 0, array_length);
+		 }
+		 return array;
+	}
+
 
     // Suffix Arrayを用いて、文字列の頻度を求めるコード
     // ここから、指定する範囲のコードは変更してはならない。
@@ -192,21 +246,29 @@ public class Frequencer implements FrequencerInterface{
         //
         // ここに比較のコードを書け 
         //
-	int x=mySpace.length-i;
-	int y=k-j;
-	for(;i<mySpace.length && j<k;i++,j++){
-		if(mySpace[i]<myTarget[j]){
-			return -1;
-		}else if(mySpace[i]>myTarget[j]){
-			return 1;
+		int suffix_i = suffixArray[i];
+		int target_j = j;
+		int target_k = k;
+		int target_length = k-j;
+
+		while(mySpace[suffix_i] == myTarget[target_j]) {
+			suffix_i++;
+			target_j++;
+			if(mySpace.length <= suffix_i || target_k <= target_j) {
+				if(mySpace.length - suffixArray[i] < target_length) {
+					return -1;
+				} else if(mySpace.length - suffixArray[i] > target_length){
+					return 0;
+				}else{
+					return 0;
+				}
+			}
 		}
-	}
-	if(x<y){
-		return -1;
-	}else{
-		return 0;  
-	}          
-        // この行は変更しなければならない。
+		if(mySpace[suffix_i] > myTarget[target_j]) {
+			return 1;
+		} else {
+			return -1;
+		}
     }
 
 
@@ -237,12 +299,36 @@ public class Frequencer implements FrequencerInterface{
         // ここにコードを記述せよ。                                                 
         //
 
-	for(int i = 0; i < suffixArray.length; i++){
+/*	for(int i = 0; i < suffixArray.length; i++){
 		if(targetCompare(suffixArray[i],start,end) == 0){
 			return i;
 		}
 	}                                                                         
-        return -1; //このコードは変更しなければならない。          
+        return -1; //このコードは変更しなければならない。 */
+
+		//二分探索
+		if(targetCompare(0, start, end) == 0){
+			return 0;
+		}
+		int left = 1;
+		int right = suffixArray.length - 1;
+		while(true){
+			int mid = (left + right)/2;
+			int result = targetCompare(mid, start, end);
+			if(left >= right){
+				if(result == 0){
+					return mid;
+				}else{
+					return -1;
+				}
+			}else if(result == 0 && targetCompare(mid-1, start, end) != 0){
+				return mid;
+			}else if(result == -1){
+				left = mid + 1;
+			}else{
+				right = mid - 1;
+			}
+		}         
     }
 
     private int subByteEndIndex(int start, int end) {
@@ -270,12 +356,36 @@ public class Frequencer implements FrequencerInterface{
         //                                                                   
         //　ここにコードを記述せよ                                           
         //
-	for(int i = suffixArray.length-1; i >=0 ; i--){
+	/*for(int i = suffixArray.length-1; i >=0 ; i--){
 		if(targetCompare(suffixArray[i],start,end) == 0){
 			return i+1;
 		}
 	}                                                                   
-        return -1; // この行は変更しなければならない、       
+        return -1; // この行は変更しなければならない、   */   
+
+		//二分探索
+		if(targetCompare(mySpace.length-1, start, end) == 0){
+			return mySpace.length;
+		}
+		int left = 0;
+		int right = suffixArray.length - 2;
+		while(true){
+			int mid = (left + right)/2;
+			int result = targetCompare(mid, start, end);
+			if(left >= right){
+				if(result == 0){
+					return mid + 1;
+				}else{
+					return -1;
+				}
+			}else if(result == 0 && targetCompare(mid+1, start, end) != 0){
+				return mid + 1;
+			}else if(result == 1){
+				right = mid - 1;
+			}else{
+				left = mid + 1;
+			}
+		} 
     }
 
 

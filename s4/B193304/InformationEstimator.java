@@ -1,6 +1,7 @@
 package s4.B193304; // Please modify to s4.Bnnnnnn, where nnnnnn is your student ID. 
 import java.lang.*;
 import s4.specification.*;
+import java.util.Arrays;
 /*
 // What is imported from s4.specification
 package s4.specification;
@@ -19,6 +20,7 @@ public class InformationEstimator implements InformationEstimatorInterface{
     // Code to tet, *warning: This code condtains intentional problem*
     byte [] myTarget; // data to compute its information quantity
     byte [] mySpace;  // Sample space to compute the probability
+    double [] dict;
     FrequencerInterface myFrequencer;  // Object for counting frequency
 
     byte [] subBytes(byte [] x, int start, int end) {
@@ -34,14 +36,18 @@ public class InformationEstimator implements InformationEstimatorInterface{
 	return  - Math.log10((double) freq / (double) mySpace.length)/ Math.log10((double) 2.0);
     }
 
-    public void setTarget(byte [] target) { myTarget = target;}
+    public void setTarget(byte [] target) { 
+	myTarget = target;
+	dict=new double[target.length+1];
+	Arrays.fill(dict,Double.MAX_VALUE);
+    }
     public void setSpace(byte []space) { 
 	myFrequencer = new Frequencer();
 	mySpace = space; myFrequencer.setSpace(space); 
     }
 
     public double estimation(){
-	double value=Double.MAX_VALUE;
+	/*double value=Double.MAX_VALUE;
 	double value1;
 	double values[]=new double[myTarget.length];
 	for(int i=0;i<myTarget.length;i++){
@@ -54,7 +60,33 @@ public class InformationEstimator implements InformationEstimatorInterface{
 		}
 		values[i]=value;
 	}
-	return value;
+	return value;*/
+		if(myTarget == null || myTarget.length <= 0){
+			return 0.0;
+		}
+
+		if(mySpace == null || mySpace.length <= 0){
+			return Double.MAX_VALUE;
+		}
+
+		int start = 0;
+		int end = 1;
+		for(end = 1; end <= myTarget.length; end++){
+			double value = 0;
+			for(int partition = 1; partition <= end; partition++) {
+				if (partition == end) {
+					myFrequencer.setTarget(subBytes(myTarget, start, end));
+					value = iq(myFrequencer.frequency());
+				} else {
+					myFrequencer.setTarget(subBytes(myTarget, partition, end));
+					value = dict[partition] + iq(myFrequencer.frequency());
+				}
+				if (dict[end] > value) {
+					dict[end] = value;
+				}
+			}
+		}
+		return dict[end-1];
     }
 
     public static void main(String[] args) {
